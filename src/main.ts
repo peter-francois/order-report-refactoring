@@ -1,30 +1,19 @@
 import * as fs from "fs";
 import * as path from "path";
 import { loadData } from "./services/dataLoader";
+import { calculateLoyaltyPoints } from "./services/loyaltyService";
 
 // Constantes globales mal organisées
 const TAX = 0.2;
 const SHIPPING_LIMIT = 50;
-const SHIP = 5.0;
-const PREMIUM_THRESHOLD = 1000;
-const LOYALTY_RATIO = 0.01;
 const HANDLING_FEE = 2.5;
 const MAX_DISCOUNT = 200;
-
 
 function run(): string {
   const { customers, products, shippingZones, promotions, orders } = loadData();
 
-  // Calcul des points de fidélité (première duplication)
-  const loyaltyPoints: Record<string, number> = {};
-  for (const o of orders) {
-    const cid = o.customer_id;
-    if (!loyaltyPoints[cid]) {
-      loyaltyPoints[cid] = 0;
-    }
-    // Calcul basé sur le prix de commande
-    loyaltyPoints[cid] += o.qty * o.unit_price * LOYALTY_RATIO;
-  }
+  // Calcul des points de fidélité
+  const loyaltyPoints: Record<string, number> = calculateLoyaltyPoints(orders);
 
   // Groupement par client (logique métier mélangée avec aggregation)
   const totalsByCustomer: Record<string, any> = {};
