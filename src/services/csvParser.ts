@@ -5,6 +5,7 @@ import { CustomerCurrencyEnum, CustomerLevelEnum } from "../types/enum/customer.
 import { ShippingZoneEnum } from "../types/enum/shippingZone.enum";
 import { ProductInterface } from "../types/product.interface";
 import { ProductCategoryEnum } from "../types/enum/product.enum";
+import { ShippingZoneInterface } from "../types/shippingZone.interface";
 
 type RawRecord = Record<string, string>;
 
@@ -54,5 +55,20 @@ export function parseProducts(filePath: string): Record<string, ProductInterface
         taxable: r.taxable + "\r" === "true",
       },
     ]),
+  );
+}
+
+export function parseShippingZones(filePath: string): Record<string, ShippingZoneInterface> {
+  const content = fs.readFileSync(filePath, "utf-8");
+  const rows: RawRecord[] = parse(content, { columns: true, skip_empty_lines: true });
+  return Object.fromEntries(
+    rows.map((r) => [
+      r.zone,
+      {
+        zone: r.zone as ShippingZoneEnum,
+        base: parseFloat(r.base),
+        per_kg: parseFloat(r.per_kg || "0.5"),
+      },
+    ])
   );
 }

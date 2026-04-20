@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { parseCustomers, parseProducts } from "./services/csvParser";
+import { parseCustomers, parseProducts, parseShippingZones } from "./services/csvParser";
 import { CustomerInterface } from "./types/customer.interface";
 import { ProductInterface } from "./types/product.interface";
 
@@ -37,17 +37,7 @@ function run(): string {
   const products: Record<string, ProductInterface> = parseProducts(prodPath);
 
   // Lecture shipping zones (encore une autre variation du parsing)
-  const shippingZones: Record<string, ShippingZone> = {};
-  const shipData = fs.readFileSync(shipPath, "utf-8");
-  const shipLines = shipData.split("\n").filter((l) => l.trim());
-  for (let i = 1; i < shipLines.length; i++) {
-    const p = shipLines[i].split(",");
-    shippingZones[p[0]] = {
-      zone: p[0],
-      base: parseFloat(p[1]),
-      per_kg: parseFloat(p[2] || "0.5"),
-    };
-  }
+  const shippingZones: Record<string, ShippingZone> = parseShippingZones(shipPath);
 
   // Lecture promotions (parsing légèrement différent encore)
   const promotions: Record<string, Promotion> = {};
