@@ -25,6 +25,8 @@ export function loadData() {
 }
 
 function loadFile<T>(fn: () => T, name: string): T {
+  // T propage le type de retour de fn vers loadFile
+  // sans T, TypeScript perdrait le typage et retournerait any
   try {
     return fn();
   } catch (err) {
