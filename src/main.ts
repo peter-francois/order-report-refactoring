@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
-import { parseCustomers } from "./services/csvParser";
+import { parseCustomers, parseProducts } from "./services/csvParser";
+import { CustomerInterface } from "./types/customer.interface";
+import { ProductInterface } from "./types/product.interface";
 
 // Constantes globales mal organisées
 const TAX = 0.2;
@@ -29,28 +31,10 @@ function run(): string {
   const promoPath = path.join(dataFolder, "promotions.csv");
 
   // Lecture fichier customers (parsing mélangé avec logique)
-  const customers: Record<string, Customer> = parseCustomers(custPath);
+  const customers: Record<string, CustomerInterface> = parseCustomers(custPath);
 
   // Lecture fichier products (duplication du parsing)
-  const products: Record<string, Product> = {};
-  const prodData = fs.readFileSync(prodPath, "utf-8");
-  const prodLines = prodData.split("\n").filter((l) => l.trim());
-  for (let i = 1; i < prodLines.length; i++) {
-    const parts = prodLines[i].split(",");
-    try {
-      products[parts[0]] = {
-        id: parts[0],
-        name: parts[1],
-        category: parts[2],
-        price: parseFloat(parts[3]),
-        weight: parseFloat(parts[4] || "1.0"),
-        taxable: parts[5] === "true",
-      };
-    } catch (e) {
-      // Skip silencieux des erreurs
-      continue;
-    }
-  }
+  const products: Record<string, ProductInterface> = parseProducts(prodPath);
 
   // Lecture shipping zones (encore une autre variation du parsing)
   const shippingZones: Record<string, ShippingZone> = {};

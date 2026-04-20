@@ -1,15 +1,12 @@
 import { parse } from "csv-parse/sync";
 import * as fs from "fs";
 import { CustomerInterface } from "../types/customer.interface";
-import { CustomerCurrencyEnum } from "../types/enum/customer.enum";
+import { CustomerCurrencyEnum, CustomerLevelEnum } from "../types/enum/customer.enum";
+import { ShippingZoneEnum } from "../types/enum/shippingZone.enum";
+import { ProductInterface } from "../types/product.interface";
+import { ProductCategoryEnum } from "../types/enum/product.enum";
 
-export function parseCSV<T>(filePath: string): Record<string, T> {
-  const content = fs.readFileSync(filePath, "utf-8");
-  const rows = parse(content, { columns: true, skip_empty_lines: true });
-  // r est any ici car csv-parse ne connaît pas la structure du fichier à la compilation
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return Object.fromEntries(rows.map((r: any) => [r.id, r]));
-}
+type RawRecord = Record<string, string>;
 
 // Bug legacy : les fichiers CSV utilisent des fins de ligne Windows (CRLF).
 // Le code original split sur \n sans trimmer les valeurs individuelles,
@@ -20,11 +17,42 @@ export function parseCSV<T>(filePath: string): Record<string, T> {
 // le golden master (currency: r.currency + "\r").
 
 export function parseCustomers(filePath: string): Record<string, CustomerInterface> {
-  const rows = parseCSV<CustomerInterface>(filePath);
+  const content = fs.readFileSync(filePath, "utf-8");
+  const rows: RawRecord[] = parse(content, { columns: true, skip_empty_lines: true });
   return Object.fromEntries(
-    Object.values(rows).map((r) => [
+    rows.map((r) => [
       r.id,
-      { ...r, currency: (r.currency + "\r") as CustomerCurrencyEnum },
+      {
+        id: r.id,
+        name: r.name,
+        level: (r.level as CustomerLevelEnum) || "BASIC",
+        shipping_zone: (r.shipping_zone as ShippingZoneEnum) || "ZONE1",
+        currency: ((r.currency + "\r") as CustomerCurrencyEnum) || "EUR",
+      },
+    ]),
+  );
+}
+
+export function parseProducts(filePath: string): Record<string, ProductInterface> {
+  const content = fs.readFileSync(filePath, "utf-8");
+  const rows: RawRecord[] = parse(content, {
+    columns: true,
+    skip_empty_lines: true,
+    relax_quotes: true,
+  });
+  return Object.fromEntries(
+    rows.map((r) => [
+      r.id,
+      {
+        id: r.id,
+        name: r.name,
+        category: r.category as ProductCategoryEnum,
+        price: parseFloat(r.price),
+        weight: parseFloat(r.weight || "1.0"),
+        // Bug legacy : \r conservé sur taxable, "true\r" === "true" est toujours false
+        // ce qui rend tous les produits non-taxables et désactive la taxe globalement
+        taxable: r.taxable + "\r" === "true",
+      },
     ]),
   );
 }
