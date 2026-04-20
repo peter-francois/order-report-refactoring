@@ -1,5 +1,5 @@
 import path from "path";
-import { parseCustomers, parseOrders, parseProducts, parsePromotions, parseShippingZones } from "../../src/services/csvParser";
+import { parseCustomers, parseOrders, parseProducts, parsePromotions, parseShippingZones } from "../../src/data/csvParser";
 
 const fixturesPath = path.join(__dirname, "../fixtures");
 
