@@ -3,12 +3,12 @@ import * as path from "path";
 import { loadData } from "./services/dataLoader";
 import { calculateLoyaltyPoints } from "./services/loyaltyService";
 import { aggregateOrders } from "./services/orderAggregator";
+import { calculateTotalDiscount } from "./services/discountService";
 
 // Constantes globales mal organisées
 const TAX = 0.2;
 const SHIPPING_LIMIT = 50;
 const HANDLING_FEE = 2.5;
-const MAX_DISCOUNT = 200;
 
 function run(): string {
   const { customers, products, shippingZones, promotions, orders } = loadData();
@@ -18,7 +18,6 @@ function run(): string {
 
   // Groupement par client
   const totalsByCustomer = aggregateOrders(orders, products, promotions);
-
 
   // Génération du rapport (mélange calculs + formatage + I/O)
   const outputLines: string[] = [];
@@ -37,48 +36,13 @@ function run(): string {
     const currency = cust.currency || "EUR";
 
     const sub = totalsByCustomer[cid].subtotal;
-
-    // Remise par paliers (duplication #1 + magic numbers)
-    let disc = 0.0;
-    if (sub > 50) {
-      disc = sub * 0.05;
-    }
-    if (sub > 100) {
-      disc = sub * 0.1; // écrase la précédente (bug intentionnel)
-    }
-    if (sub > 500) {
-      disc = sub * 0.15;
-    }
-    if (sub > 1000 && level === "PREMIUM") {
-      disc = sub * 0.2;
-    }
-
-    // Bonus weekend (règle cachée basée sur la date)
     const firstOrderDate = totalsByCustomer[cid].items[0]?.date || "";
-    const dayOfWeek = firstOrderDate ? new Date(firstOrderDate).getDay() : 0;
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      disc = disc * 1.05; // 5% de bonus sur la remise
-    }
-
-    // Calcul remise fidélité (duplication #2)
-    let loyaltyDiscount = 0.0;
-    const pts = loyaltyPoints[cid] || 0;
-    if (pts > 100) {
-      loyaltyDiscount = Math.min(pts * 0.1, 50.0);
-    }
-    if (pts > 500) {
-      loyaltyDiscount = Math.min(pts * 0.15, 100.0);
-    }
-
-    // Plafond de remise global (règle cachée)
-    let totalDiscount = disc + loyaltyDiscount;
-    if (totalDiscount > MAX_DISCOUNT) {
-      totalDiscount = MAX_DISCOUNT;
-      // On ajuste proportionnellement (logique complexe)
-      const ratio = MAX_DISCOUNT / (disc + loyaltyDiscount);
-      disc = disc * ratio;
-      loyaltyDiscount = loyaltyDiscount * ratio;
-    }
+    const { totalDiscount, volumeDiscount, loyaltyDiscount } = calculateTotalDiscount(
+      cust.level,
+      sub,
+      firstOrderDate,
+      loyaltyPoints[cust.id],
+    );
 
     // Calcul taxe (avec gestion spéciale par produit)
     const taxable = sub - totalDiscount;
@@ -162,7 +126,7 @@ function run(): string {
     outputLines.push(`Level: ${level} | Zone: ${zone} | Currency: ${currency}`);
     outputLines.push(`Subtotal: ${sub.toFixed(2)}`);
     outputLines.push(`Discount: ${totalDiscount.toFixed(2)}`);
-    outputLines.push(`  - Volume discount: ${disc.toFixed(2)}`);
+    outputLines.push(`  - Volume discount: ${volumeDiscount.toFixed(2)}`);
     outputLines.push(`  - Loyalty discount: ${loyaltyDiscount.toFixed(2)}`);
     if (totalsByCustomer[cid].morningBonus > 0) {
       outputLines.push(`  - Morning bonus: ${totalsByCustomer[cid].morningBonus.toFixed(2)}`);
@@ -173,7 +137,7 @@ function run(): string {
       outputLines.push(`Handling (${itemCount} items): ${handling.toFixed(2)}`);
     }
     outputLines.push(`Total: ${total.toFixed(2)} ${currency}`);
-    outputLines.push(`Loyalty Points: ${Math.floor(pts)}`);
+    outputLines.push(`Loyalty Points: ${Math.floor(loyaltyPoints[cust.id])}`);
     outputLines.push("");
 
     // Export JSON en parallèle (side effect)
@@ -182,7 +146,7 @@ function run(): string {
       name: name,
       total: total,
       currency: currency,
-      loyalty_points: Math.floor(pts),
+      loyalty_points: Math.floor(loyaltyPoints[cust.id]),
     });
   }
 
