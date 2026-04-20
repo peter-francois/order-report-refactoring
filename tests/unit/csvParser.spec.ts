@@ -1,5 +1,5 @@
 import path from "path";
-import { parseCustomers, parseProducts, parsePromotions, parseShippingZones } from "../../src/services/csvParser";
+import { parseCustomers, parseOrders, parseProducts, parsePromotions, parseShippingZones } from "../../src/services/csvParser";
 
 const fixturesPath = path.join(__dirname, "../fixtures");
 
@@ -67,5 +67,23 @@ describe("parsePromotions", () => {
   it("should reproduce legacy \\r bug on active, making all promotions active", () => {
     const promotions = parsePromotions(path.join(fixturesPath, "promotions.csv"));
     expect(promotions["PROMO20"].active).toBe(true);
+  });
+});
+
+describe("parseOrders", () => {
+  it("should return an array of orders", () => {
+    const orders = parseOrders(path.join(fixturesPath, "orders.csv"));
+    expect(orders).toHaveLength(2);
+  });
+
+  it("should parse numeric fields correctly", () => {
+    const orders = parseOrders(path.join(fixturesPath, "orders.csv"));
+    expect(typeof orders[0].qty).toBe("number");
+    expect(typeof orders[0].unit_price).toBe("number");
+  });
+
+  it("should fallback to 12:00 if time is missing", () => {
+    const orders = parseOrders(path.join(fixturesPath, "orders.csv"));
+    expect(orders[1].time).toBe("12:00");
   });
 });

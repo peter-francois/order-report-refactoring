@@ -1,0 +1,3 @@
+id,customer_id,product_id,qty,unit_price,date,promo_code,time
+O001,C001,P001,2,29.99,2024-01-05,PROMO10,09:00
+O002,C001,P001,1,29.99,2024-01-05,,
