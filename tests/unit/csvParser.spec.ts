@@ -1,5 +1,5 @@
 import path from "path";
-import { parseCustomers, parseProducts, parseShippingZones } from "../../src/services/csvParser";
+import { parseCustomers, parseProducts, parsePromotions, parseShippingZones } from "../../src/services/csvParser";
 
 const fixturesPath = path.join(__dirname, "../fixtures");
 
@@ -55,5 +55,17 @@ describe("parseShippingZones", () => {
   it("should fallback to 0.5 if per_kg is missing", () => {
     const zones = parseShippingZones(path.join(fixturesPath, "shipping_zones.csv"));
     expect(zones["ZONE2"].per_kg).toBe(0.5);
+  });
+});
+
+describe("parsePromotions", () => {
+  it("should return a record indexed by promo code", () => {
+    const promotions = parsePromotions(path.join(fixturesPath, "promotions.csv"));
+    expect(promotions["PROMO10"]).toBeDefined();
+  });
+
+  it("should reproduce legacy \\r bug on active, making all promotions active", () => {
+    const promotions = parsePromotions(path.join(fixturesPath, "promotions.csv"));
+    expect(promotions["PROMO20"].active).toBe(true);
   });
 });

@@ -1,0 +1,3 @@
+code,type,value,active
+PROMO10,PERCENTAGE,10,true
+PROMO20,FIXED,20,false
