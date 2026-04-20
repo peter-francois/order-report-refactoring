@@ -1,6 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
-import { parseCustomers, parseProducts, parseShippingZones } from "./services/csvParser";
+import {
+  parseCustomers,
+  parseProducts,
+  parsePromotions,
+  parseShippingZones,
+} from "./services/csvParser";
 import { CustomerInterface } from "./types/customer.interface";
 import { ProductInterface } from "./types/product.interface";
 
@@ -40,22 +45,7 @@ function run(): string {
   const shippingZones: Record<string, ShippingZone> = parseShippingZones(shipPath);
 
   // Lecture promotions (parsing légèrement différent encore)
-  const promotions: Record<string, Promotion> = {};
-  try {
-    const promoData = fs.readFileSync(promoPath, "utf-8");
-    const promoLines = promoData.split("\n").filter((l) => l.trim());
-    for (let i = 1; i < promoLines.length; i++) {
-      const p = promoLines[i].split(",");
-      promotions[p[0]] = {
-        code: p[0],
-        type: p[1], // PERCENTAGE ou FIXED
-        value: p[2],
-        active: p[3] !== "false",
-      };
-    }
-  } catch (err) {
-    // Si pas de fichier promo, on continue
-  }
+  const promotions: Record<string, Promotion> = parsePromotions(promoPath);
 
   // Lecture orders (parsing avec try/catch mais logique mélangée)
   const orders: Order[] = [];

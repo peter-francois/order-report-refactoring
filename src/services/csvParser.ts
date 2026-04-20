@@ -6,6 +6,8 @@ import { ShippingZoneEnum } from "../types/enum/shippingZone.enum";
 import { ProductInterface } from "../types/product.interface";
 import { ProductCategoryEnum } from "../types/enum/product.enum";
 import { ShippingZoneInterface } from "../types/shippingZone.interface";
+import { PromotionCodeEnum, PromotionTypeEnum } from "../types/enum/promotion.enum";
+import { PromotionInterface } from "../types/promotion.interface";
 
 type RawRecord = Record<string, string>;
 
@@ -67,8 +69,28 @@ export function parseShippingZones(filePath: string): Record<string, ShippingZon
       {
         zone: r.zone as ShippingZoneEnum,
         base: parseFloat(r.base),
+        // Pas de bug \r à reproduire : zone est la première colonne (pas de \r),
+        // base et per_kg sont absorbés par parseFloat
         per_kg: parseFloat(r.per_kg || "0.5"),
       },
-    ])
+    ]),
+  );
+}
+
+export function parsePromotions(filePath: string): Record<string, PromotionInterface> {
+  const content = fs.readFileSync(filePath, "utf-8");
+  const rows: RawRecord[] = parse(content, { columns: true, skip_empty_lines: true });
+  return Object.fromEntries(
+    rows.map((r) => [
+      r.code,
+      {
+        code: r.code as PromotionCodeEnum,
+        type: r.type as PromotionTypeEnum,
+        value: parseInt(r.value),
+        // Bug legacy : \r collé sur active, "false\r" !== "false" est toujours true
+        // ce qui rend toutes les promotions actives même si active === "false"
+        active: r.active + "\r" !== "false",
+      },
+    ]),
   );
 }
