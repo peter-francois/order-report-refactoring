@@ -152,9 +152,6 @@ function run(): string {
 
   const result = outputLines.join("\n");
 
-  // Side effects: print + file write
-  console.log(result);
-
   // Export JSON surprise
   const outputPath = path.join(__dirname, "output.json");
   fs.writeFileSync(outputPath, JSON.stringify(jsonData, null, 2));
