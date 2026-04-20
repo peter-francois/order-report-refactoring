@@ -1,5 +1,5 @@
 import path from "path";
-import { parseCustomers, parseProducts } from "../../src/services/csvParser";
+import { parseCustomers, parseProducts, parseShippingZones } from "../../src/services/csvParser";
 
 const fixturesPath = path.join(__dirname, "../fixtures");
 
@@ -43,5 +43,17 @@ describe("parseProducts", () => {
   it("should fallback to 1.0 if weight is missing", () => {
     const products = parseProducts(path.join(fixturesPath, "products.csv"));
     expect(products["P002"].weight).toBe(1.0);
+  });
+});
+
+describe("parseShippingZones", () => {
+  it("should return a record indexed by zone", () => {
+    const zones = parseShippingZones(path.join(fixturesPath, "shipping_zones.csv"));
+    expect(zones["ZONE1"]).toBeDefined();
+  });
+
+  it("should fallback to 0.5 if per_kg is missing", () => {
+    const zones = parseShippingZones(path.join(fixturesPath, "shipping_zones.csv"));
+    expect(zones["ZONE2"].per_kg).toBe(0.5);
   });
 });
