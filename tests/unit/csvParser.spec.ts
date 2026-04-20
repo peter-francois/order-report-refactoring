@@ -1,5 +1,5 @@
 import path from "path";
-import { parseCustomers } from "../../src/services/csvParser";
+import { parseCustomers, parseProducts } from "../../src/services/csvParser";
 
 const fixturesPath = path.join(__dirname, "../fixtures");
 
@@ -20,5 +20,28 @@ describe("parseCustomers", () => {
   it("should reproduce legacy \\r bug on currency", () => {
     const customers = parseCustomers(path.join(fixturesPath, "customers.csv"));
     expect(customers["C001"].currency).toBe("EUR\r");
+  });
+});
+
+describe("parseProducts", () => {
+  it("should return a record indexed by product id", () => {
+    const products = parseProducts(path.join(fixturesPath, "products.csv"));
+    expect(products["P001"]).toBeDefined();
+  });
+
+  it("should parse numeric fields correctly", () => {
+    const products = parseProducts(path.join(fixturesPath, "products.csv"));
+    expect(typeof products["P001"].price).toBe("number");
+    expect(typeof products["P001"].weight).toBe("number");
+  });
+
+  it("should reproduce legacy \\r bug on taxable, making all products non-taxable", () => {
+    const products = parseProducts(path.join(fixturesPath, "products.csv"));
+    expect(products["P001"].taxable).toBe(false);
+  });
+
+  it("should fallback to 1.0 if weight is missing", () => {
+    const products = parseProducts(path.join(fixturesPath, "products.csv"));
+    expect(products["P002"].weight).toBe(1.0);
   });
 });
