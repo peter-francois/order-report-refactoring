@@ -5,7 +5,8 @@
   "main": "legacy/orderReportLegacy.ts",
   "scripts": {
     "legacy": "ts-node legacy/orderReportLegacy.ts",
-    "test": "jest",
+    "refacto": "ts-node src/main.ts",
+    "test": "jest --clearCache && jest",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts,.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\""
@@ -24,6 +25,9 @@
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.58.2"
+  },
+  "dependencies": {
+    "csv-parse": "^6.2.1"
   },
   "jest": {
     "moduleFileExtensions": [

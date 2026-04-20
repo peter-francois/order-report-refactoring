@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { parseCustomers } from "./services/csvParser";
 
 // Constantes globales mal organisées
 const TAX = 0.2;
@@ -20,7 +21,7 @@ type Promotion = any;
 // Fonction principale qui fait TOUT
 function run(): string {
   const base = __dirname;
-  const dataFolder = path.join(base, "../legacy/data")
+  const dataFolder = path.join(base, "../legacy/data");
   const custPath = path.join(dataFolder, "customers.csv");
   const ordPath = path.join(dataFolder, "orders.csv");
   const prodPath = path.join(dataFolder, "products.csv");
@@ -28,21 +29,7 @@ function run(): string {
   const promoPath = path.join(dataFolder, "promotions.csv");
 
   // Lecture fichier customers (parsing mélangé avec logique)
-  const customers: Record<string, Customer> = {};
-  const custData = fs.readFileSync(custPath, "utf-8");
-  const custLines = custData.split("\n").filter((l) => l.trim());
-  const custHeader = custLines[0].split(",");
-  for (let i = 1; i < custLines.length; i++) {
-    const parts = custLines[i].split(",");
-    const id = parts[0];
-    customers[id] = {
-      id: parts[0],
-      name: parts[1],
-      level: parts[2] || "BASIC",
-      shipping_zone: parts[3] || "ZONE1",
-      currency: parts[4] || "EUR",
-    };
-  }
+  const customers: Record<string, Customer> = parseCustomers(custPath);
 
   // Lecture fichier products (duplication du parsing)
   const products: Record<string, Product> = {};
@@ -140,7 +127,7 @@ function run(): string {
 
     // Récupération du produit avec fallback
     const prod = products[o.product_id] || {};
-    let basePrice = prod.price !== undefined ? prod.price : o.unit_price;
+    const basePrice = prod.price !== undefined ? prod.price : o.unit_price;
 
     // Application de la promo (logique complexe et bugguée)
     const promoCode = o.promo_code;
