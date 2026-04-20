@@ -2,12 +2,16 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   parseCustomers,
+  parseOrders,
   parseProducts,
   parsePromotions,
   parseShippingZones,
 } from "./services/csvParser";
 import { CustomerInterface } from "./types/customer.interface";
 import { ProductInterface } from "./types/product.interface";
+import { ShippingZoneInterface } from "./types/shippingZone.interface";
+import { PromotionInterface } from "./types/promotion.interface";
+import { OrderInterface } from "./types/order.interface";
 
 // Constantes globales mal organisées
 const TAX = 0.2;
@@ -42,36 +46,13 @@ function run(): string {
   const products: Record<string, ProductInterface> = parseProducts(prodPath);
 
   // Lecture shipping zones (encore une autre variation du parsing)
-  const shippingZones: Record<string, ShippingZone> = parseShippingZones(shipPath);
+  const shippingZones: Record<string, ShippingZoneInterface> = parseShippingZones(shipPath);
 
   // Lecture promotions (parsing légèrement différent encore)
-  const promotions: Record<string, Promotion> = parsePromotions(promoPath);
+  const promotions: Record<string, PromotionInterface> = parsePromotions(promoPath);
 
   // Lecture orders (parsing avec try/catch mais logique mélangée)
-  const orders: Order[] = [];
-  const ordData = fs.readFileSync(ordPath, "utf-8");
-  const ordLines = ordData.split("\n").filter((l) => l.trim());
-  for (let i = 1; i < ordLines.length; i++) {
-    const parts = ordLines[i].split(",");
-    try {
-      const qty = parseInt(parts[3]);
-      const price = parseFloat(parts[4]);
-
-      orders.push({
-        id: parts[0],
-        customer_id: parts[1],
-        product_id: parts[2],
-        qty: qty,
-        unit_price: price,
-        date: parts[5],
-        promo_code: parts[6] || "",
-        time: parts[7] || "12:00",
-      });
-    } catch (e) {
-      // Skip silencieux
-      continue;
-    }
-  }
+  const orders: OrderInterface[] = parseOrders(ordPath);
 
   // Calcul des points de fidélité (première duplication)
   const loyaltyPoints: Record<string, number> = {};
@@ -102,10 +83,10 @@ function run(): string {
       const promo = promotions[promoCode];
       if (promo.active) {
         if (promo.type === "PERCENTAGE") {
-          discountRate = parseFloat(promo.value) / 100;
+          discountRate = promo.value / 100;
         } else if (promo.type === "FIXED") {
           // Bug intentionnel: appliqué par ligne au lieu de global
-          fixedDiscount = parseFloat(promo.value);
+          fixedDiscount = promo.value;
         }
       }
     }

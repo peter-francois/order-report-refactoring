@@ -8,6 +8,7 @@ import { ProductCategoryEnum } from "../types/enum/product.enum";
 import { ShippingZoneInterface } from "../types/shippingZone.interface";
 import { PromotionCodeEnum, PromotionTypeEnum } from "../types/enum/promotion.enum";
 import { PromotionInterface } from "../types/promotion.interface";
+import { ISODateString, ISOTimeString, OrderInterface } from "../types/order.interface";
 
 type RawRecord = Record<string, string>;
 
@@ -93,4 +94,21 @@ export function parsePromotions(filePath: string): Record<string, PromotionInter
       },
     ]),
   );
+}
+
+export function parseOrders(filePath: string): OrderInterface[] {
+  const content = fs.readFileSync(filePath, "utf-8");
+  const rows: RawRecord[] = parse(content, { columns: true, skip_empty_lines: true });
+  return rows.map((r) => ({
+    id: r.id,
+    customer_id: r.customer_id,
+    product_id: r.product_id,
+    qty: parseInt(r.qty),
+    unit_price: parseFloat(r.unit_price),
+    date: r.date as ISODateString,
+    promo_code: r.promo_code as PromotionCodeEnum,
+    // Bug legacy : \r conservé sur time, mais n'affecte pas le résultat
+    // car parseInt() sur "12:00\r" ignore le \r
+    time: (r.time || "12:00") as ISOTimeString,
+  }));
 }
