@@ -1,5 +1,6 @@
 import { calculateLoyaltyPoints } from "../../src/services/loyaltyService";
-import { OrderInterface } from "../../src/types/order.interface";
+import { OrderInterface } from "../../src/types/interfaces/order.interface";
+
 
 describe("calculateLoyaltyPoints", () => {
 

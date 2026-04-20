@@ -1,4 +1,4 @@
-import { ProductCategoryEnum } from "./enum/product.enum";
+import { ProductCategoryEnum } from "../enum/product.enum";
 
 export interface ProductInterface {
   id: string;

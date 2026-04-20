@@ -1,5 +1,5 @@
 import { LOYALTY_RATIO } from "../constants";
-import { OrderInterface } from "../types/order.interface";
+import { OrderInterface } from "../types/interfaces/order.interface";
 
 export function calculateLoyaltyPoints(orders: OrderInterface[]):Record<string, number>{
     const loyaltyPoints: Record<string, number> = {};

@@ -1,4 +1,4 @@
-import { PromotionCodeEnum } from "./enum/promotion.enum";
+import { PromotionCodeEnum } from "../enum/promotion.enum";
 
 export type ISODateString = `${number}-${number}-${number}`;
 

@@ -1,14 +1,14 @@
 import { parse } from "csv-parse/sync";
 import * as fs from "fs";
-import { CustomerInterface } from "../types/customer.interface";
 import { CustomerCurrencyEnum, CustomerLevelEnum } from "../types/enum/customer.enum";
 import { ShippingZoneEnum } from "../types/enum/shippingZone.enum";
-import { ProductInterface } from "../types/product.interface";
 import { ProductCategoryEnum } from "../types/enum/product.enum";
-import { ShippingZoneInterface } from "../types/shippingZone.interface";
 import { PromotionCodeEnum, PromotionTypeEnum } from "../types/enum/promotion.enum";
-import { PromotionInterface } from "../types/promotion.interface";
-import { ISODateString, ISOTimeString, OrderInterface } from "../types/order.interface";
+import { CustomerInterface } from "../types/interfaces/customer.interface";
+import { OrderInterface, ISODateString, ISOTimeString } from "../types/interfaces/order.interface";
+import { ProductInterface } from "../types/interfaces/product.interface";
+import { PromotionInterface } from "../types/interfaces/promotion.interface";
+import { ShippingZoneInterface } from "../types/interfaces/shippingZone.interface";
 
 type RawRecord = Record<string, string>;
 
