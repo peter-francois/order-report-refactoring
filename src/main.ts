@@ -1,10 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
-import { loadData } from "./services/dataLoader";
 import { calculateLoyaltyPoints } from "./services/loyaltyService";
 import { aggregateOrders } from "./services/orderAggregator";
 import { calculateTotalDiscount } from "./services/discountService";
 import { HANDLING_FEE, SHIPPING_LIMIT, TAX } from "./constants";
+import { loadData } from "./data/dataLoader";
 
 
 function run(): string {
