@@ -20,11 +20,12 @@ type Promotion = any;
 // Fonction principale qui fait TOUT
 function run(): string {
   const base = __dirname;
-  const custPath = path.join(base, "data", "customers.csv");
-  const ordPath = path.join(base, "data", "orders.csv");
-  const prodPath = path.join(base, "data", "products.csv");
-  const shipPath = path.join(base, "data", "shipping_zones.csv");
-  const promoPath = path.join(base, "data", "promotions.csv");
+  const dataFolder = path.join(base, "../legacy/data")
+  const custPath = path.join(dataFolder, "customers.csv");
+  const ordPath = path.join(dataFolder, "orders.csv");
+  const prodPath = path.join(dataFolder, "products.csv");
+  const shipPath = path.join(dataFolder, "shipping_zones.csv");
+  const promoPath = path.join(dataFolder, "promotions.csv");
 
   // Lecture fichier customers (parsing mélangé avec logique)
   const customers: Record<string, Customer> = {};
