@@ -1,17 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import {
-  parseCustomers,
-  parseOrders,
-  parseProducts,
-  parsePromotions,
-  parseShippingZones,
-} from "./services/csvParser";
-import { CustomerInterface } from "./types/customer.interface";
-import { ProductInterface } from "./types/product.interface";
-import { ShippingZoneInterface } from "./types/shippingZone.interface";
-import { PromotionInterface } from "./types/promotion.interface";
-import { OrderInterface } from "./types/order.interface";
+import { loadData } from "./services/dataLoader";
 
 // Constantes globales mal organisées
 const TAX = 0.2;
@@ -22,37 +11,9 @@ const LOYALTY_RATIO = 0.01;
 const HANDLING_FEE = 2.5;
 const MAX_DISCOUNT = 200;
 
-// Types minimaux (manque de typage propre)
-type Customer = any;
-type Order = any;
-type Product = any;
-type ShippingZone = any;
-type Promotion = any;
 
-// Fonction principale qui fait TOUT
 function run(): string {
-  const base = __dirname;
-  const dataFolder = path.join(base, "../legacy/data");
-  const custPath = path.join(dataFolder, "customers.csv");
-  const ordPath = path.join(dataFolder, "orders.csv");
-  const prodPath = path.join(dataFolder, "products.csv");
-  const shipPath = path.join(dataFolder, "shipping_zones.csv");
-  const promoPath = path.join(dataFolder, "promotions.csv");
-
-  // Lecture fichier customers (parsing mélangé avec logique)
-  const customers: Record<string, CustomerInterface> = parseCustomers(custPath);
-
-  // Lecture fichier products (duplication du parsing)
-  const products: Record<string, ProductInterface> = parseProducts(prodPath);
-
-  // Lecture shipping zones (encore une autre variation du parsing)
-  const shippingZones: Record<string, ShippingZoneInterface> = parseShippingZones(shipPath);
-
-  // Lecture promotions (parsing légèrement différent encore)
-  const promotions: Record<string, PromotionInterface> = parsePromotions(promoPath);
-
-  // Lecture orders (parsing avec try/catch mais logique mélangée)
-  const orders: OrderInterface[] = parseOrders(ordPath);
+  const { customers, products, shippingZones, promotions, orders } = loadData();
 
   // Calcul des points de fidélité (première duplication)
   const loyaltyPoints: Record<string, number> = {};
@@ -293,7 +254,7 @@ function run(): string {
   console.log(result);
 
   // Export JSON surprise
-  const outputPath = path.join(base, "output.json");
+  const outputPath = path.join(__dirname, "output.json");
   fs.writeFileSync(outputPath, JSON.stringify(jsonData, null, 2));
 
   return result;
