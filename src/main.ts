@@ -6,7 +6,6 @@ import { calculateTotalDiscount } from "./services/discountService";
 import { HANDLING_FEE, SHIPPING_LIMIT, TAX } from "./constants";
 import { loadData } from "./data/dataLoader";
 
-
 function run(): string {
   const { customers, products, shippingZones, promotions, orders } = loadData();
 
@@ -151,6 +150,9 @@ function run(): string {
   outputLines.push(`Total Tax Collected: ${totalTaxCollected.toFixed(2)} EUR`);
 
   const result = outputLines.join("\n");
+
+  // Side effects: print + file write
+  console.log(result);
 
   // Export JSON surprise
   const outputPath = path.join(__dirname, "output.json");
