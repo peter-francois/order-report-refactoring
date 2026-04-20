@@ -4,11 +4,8 @@ import { loadData } from "./services/dataLoader";
 import { calculateLoyaltyPoints } from "./services/loyaltyService";
 import { aggregateOrders } from "./services/orderAggregator";
 import { calculateTotalDiscount } from "./services/discountService";
+import { HANDLING_FEE, SHIPPING_LIMIT, TAX } from "./constants";
 
-// Constantes globales mal organisées
-const TAX = 0.2;
-const SHIPPING_LIMIT = 50;
-const HANDLING_FEE = 2.5;
 
 function run(): string {
   const { customers, products, shippingZones, promotions, orders } = loadData();
